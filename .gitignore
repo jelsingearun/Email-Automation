@@ -31,6 +31,18 @@ ENV/
 # History / Runtime state
 history.txt
 
+# Runtime-generated files (auto-created by app.py)
+status_db.json
+audit_report.txt
+skipped_log.txt
+
+# Temporary debug/inspection scripts
+check_remaining.py
+check_rows.py
+
+# Excel temp lock files
+~$*.xlsx
+
 # Personal contact lists / sensitive data
 hr_details.xlsx
 

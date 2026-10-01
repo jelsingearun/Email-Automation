@@ -26,6 +26,7 @@ YOUR_COLLEGE = "Malla Reddy University, Hyderabad"
 # SYSTEM SETTINGS
 # ==========================================
 EXCEL_PATH = "hr_details.xlsx"
+DO_NOT_EMAIL_PATH = "DO_NOT_EMAIL.md"
 RESUME_PATH = "Arun_Jelsinge_Resume.pdf"
 SUBJECT = "Seeking Entry-Level Software Engineering Opportunity"
 
