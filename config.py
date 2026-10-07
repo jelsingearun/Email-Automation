@@ -30,7 +30,7 @@ RESUME_PATH = "Arun_Jelsinge_Resume.pdf"
 SUBJECT = "Seeking Entry-Level Software Engineering Opportunity"
 
 # Batch processing settings
-BATCH_SIZE = 69       # How many emails to send every time you run app.py
+# Each run sends all currently unsent contacts from the Excel sheet.
 MIN_WAIT = 15         # Minimum wait time between emails (seconds)
 MAX_WAIT = 20         # Maximum wait time between emails (seconds)
 SKIP_CONTACT_NAMES = {
@@ -44,6 +44,10 @@ SKIP_CONTACT_NAMES = {
 SKIP_CONTACT_EMAILS = {
     "divyarunja@gmail.com",
     "saisudheer662@gmail.com",
+    "saihasini1@gmail.com",
+    "shekarmanthena603@gmail.com",
+    "jaishrees@google.com",
+    "sandhyazaverdodiya@gmail.com",
 }
 
 # ==========================================
@@ -59,7 +63,7 @@ A FEW THINGS I HAVE BUILT
 01 · RoadCare — AI Road Damage Detection Platform
 Built a full-stack road-damage reporting platform using React, Python/FastAPI, MongoDB, OpenCV, YOLOv8, and H3. Implemented JWT authentication, role-based access, input validation, rate limiting, and unit, integration, API, database, geospatial, and E2E testing.
 02 · Academix — Academic Collaboration Platform
-Developed a collaboration platform with React 19, JavaScript, Node.js, Express.js, MongoDB, TensorFlow.js, and JWT, including REST APIs, authentication, validation, persistence, and peer matching.
+Developed a collaboration platform with React, JavaScript, Node.js, Express.js, MongoDB, TensorFlow.js, and JWT, including REST APIs, authentication, validation, persistence, and peer matching.
 03 · GitHub Repo Automator
 Created a GitHub automation CLI supporting folders, ZIP archives, and individual files, with secret scanning, sanitization, repository setup, logging, and dry-run execution.
 
@@ -70,15 +74,15 @@ If {COMPANY_NAME} is hiring entry-level software engineers or interns—or if yo
 
 One small ask: If my profile looks relevant, would you be open to pointing me toward the appropriate opportunity?
 
-📄 Resume: Attached
-💼 LinkedIn: {YOUR_LINKEDIN}
-💻 GitHub: {YOUR_GITHUB}
-🌐 Portfolio: {YOUR_PORTFOLIO}
+Resume: Attached
+LinkedIn: {YOUR_LINKEDIN}
+GitHub: {YOUR_GITHUB}
+Portfolio: {YOUR_PORTFOLIO}
 
 Thank you for your time, {HR_NAME}. I know you probably receive a lot of messages like this, so I’ll keep this short—and let my work speak for itself.
 
 Warm regards,
 {YOUR_NAME}
 {YOUR_COURSE} · {YOUR_COLLEGE}
-📞 {YOUR_PHONE} · ✉️ {YOUR_EMAIL}
+Phone: {YOUR_PHONE} · Email: {YOUR_EMAIL}
 """

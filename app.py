@@ -185,17 +185,17 @@ def main():
 
     last_sent = get_last_sent_sno()
     start_sno = last_sent + 1
-    end_sno = last_sent + config.BATCH_SIZE
+    end_sno = int(df["SNo"].max())
 
     # Filter Excel rows to match the batch we want to send
     batch_df = df[(df["SNo"] >= start_sno) & (df["SNo"] <= end_sno)]
 
     if batch_df.empty:
-        print(f"\n✅ All caught up! No more contacts to email. (Last sent SNo was {last_sent})")
+        print(f"\n All caught up! No more contacts to email. (Last sent SNo was {last_sent})")
         print("If you added new contacts to the Excel sheet, make sure they have a valid SNo.")
         return
 
-    print(f"\n🚀 Starting batch: Sending emails for SNo {start_sno} to {start_sno + len(batch_df) - 1}...")
+    print(f"\n Starting batch: Sending emails for SNo {start_sno} to {start_sno + len(batch_df) - 1}...")
 
     for index, row in batch_df.iterrows():
         sno = row.get("SNo")
@@ -214,7 +214,7 @@ def main():
             continue
 
         if pd.isna(to_email):
-            print(f"⚠️ Skipping SNo {sno} - No email address provided.")
+            print(f" Skipping SNo {sno} - No email address provided.")
             update_history(sno)
             continue
 
@@ -240,8 +240,8 @@ def main():
                 print("   ↳ Success!\n")
 
         except Exception as e:
-            print(f"❌ Failed to send to {to_email}. Error: {e}")
-            print(f"🛑 Terminating batch early. Last successful SNo: {get_last_sent_sno()}")
+            print(f" Failed to send to {to_email}. Error: {e}")
+            print(f" Terminating batch early. Last successful SNo: {get_last_sent_sno()}")
             break
 
     print(f"\n🎉 Batch process completed! Total emails sent so far: {get_last_sent_sno()}")
