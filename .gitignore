@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local contact data and spreadsheet processing artifacts
+*.xlsx
+*.xls
+*.xlsx.*
+details.md
+
+# Local-only probes and editor/OS files
+.sandbox-access-probe.tmp
+.DS_Store
+Thumbs.db

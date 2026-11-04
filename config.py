@@ -1,0 +1,101 @@
+import os
+from dotenv import load_dotenv
+
+# Load secrets from .env file when running locally.
+load_dotenv()
+
+# ==========================================
+# CREDENTIALS & SECRETS
+# ==========================================
+YOUR_EMAIL = os.getenv("YOUR_EMAIL", "")
+APP_PASSWORD = os.getenv("APP_PASSWORD")
+YOUR_PHONE = os.getenv("YOUR_PHONE", "")
+
+# ==========================================
+# YOUR DETAILS
+# ==========================================
+YOUR_NAME = "Jelsinge Arun"
+YOUR_LINKEDIN = "https://www.linkedin.com/in/arun-jelsinge-244949290/"
+YOUR_GITHUB = "https://github.com/jelsingearun"
+YOUR_PORTFOLIO = "https://jelsinge-arun-portfolio.vercel.app/"
+YOUR_COURSE = "B.Tech in Information Technology (CGPA: 7.7/10)"
+YOUR_COLLEGE = "Malla Reddy University, Hyderabad"
+
+# ==========================================
+# SYSTEM SETTINGS
+# ==========================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+EXCEL_PATH = os.path.join(BASE_DIR, "hr_details.xlsx")
+SHEET_NAME = "Sheet1"
+RESUME_PATH = os.path.join(BASE_DIR, "Jelsinge Arun Resume.pdf")
+SUBJECT = "Seeking Entry-Level Software Engineering Opportunity"
+
+# Batch processing settings
+# Each run sends all currently unsent contacts from the Excel sheet.
+MIN_WAIT = 15         # Minimum wait time between emails (seconds)
+MAX_WAIT = 20         # Maximum wait time between emails (seconds)
+SKIP_CONTACT_NAMES = {
+    "Divya Vani",
+    "Rishabh Mrinal",
+    "Sudheer Jarajapu",
+    "Sandhya Dodiya",
+    "Rajashekar Manthena",
+    "Saisudheer Jarajapu",
+}
+SKIP_CONTACT_EMAILS = {
+    "divyarunja@gmail.com", "saisudheer662@gmail.com", "saihasini1@gmail.com",
+    "shekarmanthena603@gmail.com", "jaishrees@google.com", "sandhyazaverdodiya@gmail.com",
+    "rajat.pandit016@gmail.com", "veerabhadrahareesh@gmail.com", "ashrithugadi@gmail.com",
+    "sayantann2002@gmail.com", "nagulaanusha21@gmail.com", "info@nuage.biz.tech",
+    "support@functionup.org", "info@startupdevta.com", "support@inlandmart.in",
+    "support@paymonk.com", "contact@uncotech.com", "support@nextraone.com",
+    "contact@stefronttech.com", "hello@keysquare.co", "info@bhagirathtechnologies.com",
+    "iamsumit.sc@gmail.com", "tarasha2912@gmail.com", "sales@kalyanatechworks.com",
+    "jinnajhanvi@gmail.com", "saigoudsai041@gmail.com", "contact@kisandost.org",
+    "deepasm36@gmail.com", "founders@procart.co.in", "info@zyppelectric.com",
+    "tulikapatra1998@gmail.com", "partnerships@ohmmobility.com", "info@miko.ai",
+    "info@newfundedstartup.com","contact@treviaev.in","career@nihilent.com","opportunities@gmrinfo.com",
+    "corporatetrg@aptech.co.in","careers@force-mtu.com","careers@unilever.com","careers@kolorshealthcare.com",
+    "naimisha.rao@gmail.com","hiring@zetwerk.com","contact@krishinetwork.com","careers@aarnabio.com","hello@ecofueltech.in",
+    "careers@yulu.bikes","hello@custona.com","hello@bluesemi.io","stummala@planittesting.com",
+    "hello@custona.com","hello@bluesemi.io","divya.vullamparthi@pragmaedge.com",
+    "rajeswari.pamoti@gmail.com","hiring@loophealth.com","mounikapoosarla3@gmail.com","connect@gullynetwork.com",
+    "careers@fasal.co","careers@atherenergy.com","info@peakxv.com","info@locofast.com"
+}
+
+# ==========================================
+# EMAIL TEMPLATE
+# ==========================================
+EMAIL_TEMPLATE = """Hi {HR_NAME},
+
+Iam {YOUR_NAME}, a {YOUR_COURSE} graduate from {YOUR_COLLEGE}, and Iam looking for an opportunity to start my career as a Software Engineer or Full-Stack Developer.
+
+I have hands-on experience building and testing software applications with Python, JavaScript, React, Node.js, FastAPI, MongoDB, and REST APIs. My work includes authentication, database integration, debugging, and automated and end-to-end testing.
+
+A FEW THINGS I HAVE BUILT
+01 · RoadCare — AI Road Damage Detection Platform
+Built a full-stack road-damage reporting platform using React, Python/FastAPI, MongoDB, OpenCV, YOLOv8, and H3. Implemented JWT authentication, role-based access, input validation, rate limiting, and unit, integration, API, database, geospatial, and E2E testing.
+02 · Academix — Academic Collaboration Platform
+Developed a collaboration platform with React, JavaScript, Node.js, Express.js, MongoDB, TensorFlow.js, and JWT, including REST APIs, authentication, validation, persistence, and peer matching.
+03 · GitHub Repo Automator
+Created a GitHub automation CLI supporting folders, ZIP archives, and individual files, with secret scanning, sanitization, repository setup, logging, and dry-run execution.
+
+WHY I’M REACHING OUT
+I’m looking for an environment where I can contribute to real products, learn from experienced engineers, and take ownership of meaningful problems.
+
+If {COMPANY_NAME} is hiring entry-level software engineers or interns—or if you know the right person on the engineering hiring team—I’d genuinely appreciate an introduction or referral.
+
+One small ask: If my profile looks relevant, would you be open to pointing me toward the appropriate opportunity?
+
+Resume: Attached
+LinkedIn: {YOUR_LINKEDIN}
+GitHub: {YOUR_GITHUB}
+Portfolio: {YOUR_PORTFOLIO}
+
+Thank you for your time, {HR_NAME}. I know you probably receive a lot of messages like this, so I’ll keep this short—and let my work speak for itself.
+
+Warm regards,
+{YOUR_NAME}
+{YOUR_COURSE} · {YOUR_COLLEGE}
+Phone: {YOUR_PHONE} · Email: {YOUR_EMAIL}
+"""
