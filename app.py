@@ -8,6 +8,7 @@ import random
 import os
 import sys
 import re
+import argparse
 
 import config
 
@@ -72,20 +73,21 @@ def normalize_contact_columns(df):
     return df
 
 def load_contacts():
-    """Load the contact sheet and normalize either supported header layout."""
-    header_errors = []
-    for header_row in (0, 1):
-        df = pd.read_excel(
-            config.EXCEL_PATH,
-            sheet_name=config.SHEET_NAME,
-            header=header_row,
-        )
-        try:
-            return normalize_contact_columns(df)
-        except ValueError as error:
-            header_errors.append(str(error))
-
-    raise ValueError(header_errors[-1])
+    """Load the contact sheet and normalize its header layout."""
+    preview = pd.read_excel(
+        config.EXCEL_PATH,
+        sheet_name=config.SHEET_NAME,
+        header=None,
+        nrows=2,
+    )
+    row0_str = " ".join(str(val).lower() for val in preview.iloc[0])
+    header_row = 0 if any(k in row0_str for k in ("email", "name")) else 1
+    df = pd.read_excel(
+        config.EXCEL_PATH,
+        sheet_name=config.SHEET_NAME,
+        header=header_row,
+    )
+    return normalize_contact_columns(df)
 
 def get_last_sent_sno():
     """Reads the history file to find the last successfully sent SNo."""
@@ -101,11 +103,40 @@ def update_history(sno):
     with open(HISTORY_FILE, "w") as f:
         f.write(str(sno))
 
-def create_email_body(hr_name, company_name):
-    """Formats the email template with actual variables."""
-    return config.EMAIL_TEMPLATE.format(
-        HR_NAME=hr_name,
-        COMPANY_NAME=company_name,
+def categorize_contact(job_title, profile_type):
+    """Categorizes the contact into FOUNDER, ENGINEER, HR, or GENERAL."""
+    title = str(job_title).lower() if job_title and not pd.isna(job_title) else ""
+    ptype = str(profile_type).lower() if profile_type and not pd.isna(profile_type) else ""
+
+    if any(k in title for k in ("founder", "ceo", "cto", "chief", "director", "partner", "co-founder")) or "founder" in ptype:
+        return "FOUNDER"
+
+    if any(k in title for k in ("engineer", "developer", "devops", "backend", "frontend", "full stack", "architect", "data", "trainee", "programmer", "sde", "solutions")) and not any(k in title for k in ("talent", "recruiter", "hr", "staffing", "hiring")):
+        return "ENGINEER"
+
+    if any(k in title for k in ("hr", "talent", "recruiter", "recruiting", "staffing", "people", "hiring")) or ptype.strip() == "hr":
+        return "HR"
+
+    return "GENERAL"
+
+def create_email_body(hr_name, company_name, job_title="", profile_type=""):
+    """Formats the appropriate persona-tailored email template with actual variables."""
+    clean_name = str(hr_name).strip() if hr_name and not pd.isna(hr_name) else ""
+    if not clean_name or clean_name.lower() in ("nan", "founder / ceo", "hiring manager", "—"):
+        greeting_name = "there"
+    else:
+        greeting_name = clean_name.split()[0].title()
+
+    clean_company = str(company_name).strip() if company_name and not pd.isna(company_name) else "your company"
+    if clean_company.lower() in ("nan", "not provided", "—"):
+        clean_company = "your company"
+
+    category = categorize_contact(job_title, profile_type)
+    template = config.EMAIL_TEMPLATES.get(category, config.EMAIL_TEMPLATE)
+
+    return template.format(
+        HR_NAME=greeting_name,
+        COMPANY_NAME=clean_company,
         YOUR_NAME=config.YOUR_NAME,
         YOUR_COURSE=config.YOUR_COURSE,
         YOUR_COLLEGE=config.YOUR_COLLEGE,
@@ -146,8 +177,8 @@ def should_skip_contact(hr_name, *email_values):
         contact_emails.update(_normalized_emails(value))
     return name in skip_names or bool(contact_emails & skip_emails)
 
-def send_email(to_email, subject, body):
-    """Constructs and sends the email."""
+def send_email(server, to_email, subject, body, resume_bytes=None, resume_filename=None):
+    """Constructs and sends the email using an active SMTP session."""
     recipient_emails = get_recipient_emails(to_email)
     if not recipient_emails:
         raise ValueError(f"No valid recipient email found in: {to_email!r}")
@@ -163,28 +194,20 @@ def send_email(to_email, subject, body):
         msg["Subject"] = subject
         msg.attach(MIMEText(body, "plain"))
 
-        if os.path.exists(config.RESUME_PATH):
-            with open(config.RESUME_PATH, "rb") as f:
-                part = MIMEApplication(
-                    f.read(),
-                    Name=os.path.basename(config.RESUME_PATH),
-                )
-                part["Content-Disposition"] = (
-                    f'attachment; filename="{os.path.basename(config.RESUME_PATH)}"'
-                )
-                msg.attach(part)
-        else:
-            print(
-                f"Warning: Resume not found at {config.RESUME_PATH}! "
-                "Sending without attachment."
-            )
+        if resume_bytes and resume_filename:
+            part = MIMEApplication(resume_bytes, Name=resume_filename)
+            part["Content-Disposition"] = f'attachment; filename="{resume_filename}"'
+            msg.attach(part)
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(config.YOUR_EMAIL, config.APP_PASSWORD)
-            server.send_message(msg)
+        server.send_message(msg)
 
 def main():
-    if not config.YOUR_EMAIL or not config.APP_PASSWORD:
+    parser = argparse.ArgumentParser(description="Cold email outreach automator")
+    parser.add_argument("--limit", type=int, default=config.BATCH_SIZE, help="Max emails to send this run")
+    parser.add_argument("--dry-run", action="store_true", help="Preview recipients without sending")
+    args = parser.parse_args()
+
+    if not args.dry_run and (not config.YOUR_EMAIL or not config.APP_PASSWORD):
         print("Error: Email or App Password is missing in .env file.")
         sys.exit(1)
 
@@ -196,64 +219,86 @@ def main():
 
     last_sent = get_last_sent_sno()
     start_sno = last_sent + 1
-    end_sno = int(df["SNo"].max())
-
-    # Filter Excel rows to match the batch we want to send
-    batch_df = df[(df["SNo"] >= start_sno) & (df["SNo"] <= end_sno)]
+    batch_df = df[df["SNo"] >= start_sno].head(args.limit)
 
     if batch_df.empty:
         print(f"\n All caught up! No more contacts to email. (Last sent SNo was {last_sent})")
         print("If you added new contacts to the Excel sheet, make sure they have a valid SNo.")
         return
 
-    print(f"\n Starting batch: Sending emails for SNo {start_sno} to {start_sno + len(batch_df) - 1}...")
-
-    for _, row in batch_df.iterrows():
-        sno = row.get("SNo")
-        hr_name = row.get("Name", "Hiring Manager")
-        to_email = row.get("Email")
-        company_name = row.get("Company", "your company")
-
-        if should_skip_contact(
-            hr_name,
-            to_email,
-            row.get("Personal Email"),
-            row.get("Corporate Email"),
-        ):
-            print(f"⏭️ Skipping {hr_name} ({to_email}) - configured skip contact.")
-            update_history(sno)
-            continue
-
-        recipients = get_recipient_emails(to_email)
-        if not recipients:
-            print(f" Skipping SNo {sno} - No valid email address provided ({to_email!r}).")
-            update_history(sno)
-            continue
-
-        body = create_email_body(hr_name, company_name)
-
+    resume_bytes = None
+    resume_filename = None
+    if os.path.exists(config.RESUME_PATH):
+        with open(config.RESUME_PATH, "rb") as f:
+            resume_bytes = f.read()
+        resume_filename = os.path.basename(config.RESUME_PATH)
+    else:
         print(
-            f"[{sno}] Sending email to {hr_name} "
-            f"({', '.join(recipients) or to_email}) at {company_name}..."
+            f"Warning: Resume not found at {config.RESUME_PATH}! "
+            "Sending without attachment."
         )
-        try:
-            send_email(to_email, config.SUBJECT, body)
-            
-            # Save progress immediately after successful send
-            update_history(sno) 
-            
-            # Random wait between emails (except for the very last one in the batch)
-            if sno != batch_df["SNo"].max():
-                wait_time = random.randint(config.MIN_WAIT, config.MAX_WAIT)
-                print(f"   ↳ Success! Waiting {wait_time} sec to avoid spam filters...\n")
-                time.sleep(wait_time)
-            else:
-                print("   ↳ Success!\n")
 
-        except Exception as e:
-            print(f" Failed to send to {to_email}. Error: {e}")
-            print(f" Terminating batch early. Last successful SNo: {get_last_sent_sno()}")
-            break
+    if args.dry_run:
+        print(f"\n[DRY RUN] Previewing next {len(batch_df)} contacts (SNo {batch_df['SNo'].min()} to {batch_df['SNo'].max()}):")
+        for _, row in batch_df.iterrows():
+            category = categorize_contact(row.get("Job Title"), row.get("Profile Type"))
+            print(f"  [{row.get('SNo')}] {row.get('Name')} <{row.get('Email')}> | {row.get('Job Title')} at {row.get('Company')} [{category}]")
+        return
+
+    print(f"\n Starting batch: Sending up to {len(batch_df)} emails (SNo {batch_df['SNo'].min()} to {batch_df['SNo'].max()})...")
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(config.YOUR_EMAIL, config.APP_PASSWORD)
+
+        for _, row in batch_df.iterrows():
+            sno = row.get("SNo")
+            hr_name = row.get("Name", "Hiring Manager")
+            to_email = row.get("Email")
+            company_name = row.get("Company", "your company")
+            job_title = row.get("Job Title")
+            profile_type = row.get("Profile Type")
+
+            if should_skip_contact(
+                hr_name,
+                to_email,
+                row.get("Personal Email"),
+                row.get("Corporate Email"),
+            ):
+                print(f"⏭️ Skipping {hr_name} ({to_email}) - configured skip contact.")
+                update_history(sno)
+                continue
+
+            recipients = get_recipient_emails(to_email)
+            if not recipients:
+                print(f" Skipping SNo {sno} - No valid email address provided ({to_email!r}).")
+                update_history(sno)
+                continue
+
+            category = categorize_contact(job_title, profile_type)
+            body = create_email_body(hr_name, company_name, job_title, profile_type)
+
+            print(
+                f"[{sno}] Sending [{category}] email to {hr_name} "
+                f"({', '.join(recipients) or to_email}) at {company_name}..."
+            )
+            try:
+                send_email(server, to_email, config.SUBJECT, body, resume_bytes, resume_filename)
+                
+                # Save progress immediately after successful send
+                update_history(sno) 
+                
+                # Random wait between emails (except for the very last one in the batch)
+                if sno != batch_df["SNo"].max():
+                    wait_time = random.randint(config.MIN_WAIT, config.MAX_WAIT)
+                    print(f"   ↳ Success! Waiting {wait_time} sec to avoid spam filters...\n")
+                    time.sleep(wait_time)
+                else:
+                    print("   ↳ Success!\n")
+
+            except Exception as e:
+                print(f" Failed to send to {to_email}. Error: {e}")
+                print(f" Terminating batch early. Last successful SNo: {get_last_sent_sno()}")
+                break
 
     print(f"\n🎉 Batch process completed! Total emails sent so far: {get_last_sent_sno()}")
 
