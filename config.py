@@ -27,7 +27,7 @@ YOUR_COLLEGE = "Malla Reddy University, Hyderabad"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_PATH = os.path.join(BASE_DIR, "hr_details.xlsx")
 SHEET_NAME = "Sheet1"
-RESUME_PATH = os.path.join(BASE_DIR, "Jelsinge Arun Resume.pdf")
+RESUME_PATH = os.path.join(BASE_DIR, "Arun_Jelsinge_Resume.pdf")
 SUBJECT = f"Quick intro — {YOUR_NAME}"
 
 # Batch processing settings

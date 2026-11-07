@@ -65,7 +65,7 @@ Supported columns (normalized automatically):
 
 ### 5. Add Your Resume
 
-Place `Jelsinge Arun Resume.pdf` in the project root (or update `RESUME_PATH` in `config.py`). The script automatically attaches the PDF if present.
+Place `Arun_Jelsinge_Resume.pdf` in the project root (or update `RESUME_PATH` in `config.py`). The script automatically attaches the PDF if present.
 
 ---
 
