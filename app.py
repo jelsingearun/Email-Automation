@@ -203,7 +203,7 @@ def send_email(server, to_email, subject, body, resume_bytes=None, resume_filena
 
 def main():
     parser = argparse.ArgumentParser(description="Cold email outreach automator")
-    parser.add_argument("--limit", type=int, default=config.BATCH_SIZE, help="Max emails to send this run")
+    parser.add_argument("--limit", type=int, default=None, help="Optional max emails to send this run")
     parser.add_argument("--dry-run", action="store_true", help="Preview recipients without sending")
     args = parser.parse_args()
 
@@ -219,7 +219,9 @@ def main():
 
     last_sent = get_last_sent_sno()
     start_sno = last_sent + 1
-    batch_df = df[df["SNo"] >= start_sno].head(args.limit)
+    batch_df = df[df["SNo"] >= start_sno]
+    if args.limit:
+        batch_df = batch_df.head(args.limit)
 
     if batch_df.empty:
         print(f"\n All caught up! No more contacts to email. (Last sent SNo was {last_sent})")

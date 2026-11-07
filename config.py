@@ -30,9 +30,7 @@ SHEET_NAME = "Sheet1"
 RESUME_PATH = os.path.join(BASE_DIR, "Arun_Jelsinge_Resume.pdf")
 SUBJECT = f"Quick intro — {YOUR_NAME}"
 
-# Batch processing settings
-# Each run sends at most BATCH_SIZE contacts.
-BATCH_SIZE = int(os.getenv("BATCH_SIZE", 20))
+# Rate limiting settings
 MIN_WAIT = 15         # Minimum wait time between emails (seconds)
 MAX_WAIT = 20         # Maximum wait time between emails (seconds)
 SKIP_CONTACT_NAMES = {

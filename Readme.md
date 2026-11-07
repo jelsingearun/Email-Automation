@@ -12,7 +12,7 @@ A Python automation engine designed for high-conversion, personalized job outrea
   - **HR & Talent Acquisition (`HR`):** Clear junior/entry-level role matching, immediate availability, and resume attachment.
   - **General Inquiries (`GENERAL`):** Polite, concise inquiry asking to route the message to technical hiring.
 - **Cold Email Writer Standard:** Replaces corporate cover letter fluff with human, collegial outreach (~190 words), natural first-name greetings (`Hi [Name],` / `Hi there,`), live project links, and confident, low-pressure calls to action.
-- **Batch Processing & Rate Limiting:** Sends at most `BATCH_SIZE` contacts per run with randomized delays (`MIN_WAIT` to `MAX_WAIT` seconds) between emails to respect Gmail sending limits.
+- **Continuous Processing & Rate Limiting:** Processes all unsent contacts (or limit via `--limit N`) with randomized delays (`MIN_WAIT` to `MAX_WAIT` seconds) between emails to respect Gmail sending limits.
 - **Safe Dry Run Preview:** `--dry-run` previews the next batch of recipients, company names, and detected personas without connecting to SMTP or changing history.
 - **Auto-Save & Resume:** Atomically persists the last processed serial number (`SNo`) in `history.txt`. If an email fails mid-batch, progress is saved up to the last successful send.
 - **Reusable SMTP Session:** Authenticates with Gmail once per batch session rather than reconnecting per recipient.
@@ -48,7 +48,6 @@ YOUR_PHONE=your-phone-number
 
 Open `config.py` to customize:
 - `YOUR_NAME`, `YOUR_PHONE`, `YOUR_PORTFOLIO`, `YOUR_GITHUB`, `YOUR_LINKEDIN`
-- `BATCH_SIZE`: Maximum contacts sent per run (default: `20`)
 - `MIN_WAIT` / `MAX_WAIT`: Wait interval in seconds between successive emails (default: `15`–`20`s)
 - `SKIP_CONTACT_NAMES` / `SKIP_CONTACT_EMAILS`: Blacklist exclusions
 
@@ -77,16 +76,16 @@ Inspect the next contacts and detected personas without sending emails:
 python app.py --dry-run
 ```
 
-### Send Next Batch
-Dispatches the next configured batch (default 20 emails):
+### Send Emails
+Dispatches all remaining unsent contacts:
 ```bash
 python app.py
 ```
 
-### Override Batch Limit
-Send a smaller or larger batch for a single run:
+### Send with Batch Limit
+Send a bounded batch for a single run:
 ```bash
-python app.py --limit 5
+python app.py --limit 20
 ```
 
 ---
