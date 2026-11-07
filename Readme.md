@@ -98,7 +98,3 @@ python app.py --limit 5
 - **Targeted Run:** To resume from a specific row `N`, set `history.txt` to `N - 1`.
 
 ---
-
-## Coding Standards
-
-This project follows the [Ponytail](https://github.com/DietrichGebert/ponytail) development principles ([`AGENTS.md`](AGENTS.md)) and includes the [`cold-email-writer`](.agent/skills/cold-email-writer/SKILL.md) skill suite in `.agent/skills/`.
